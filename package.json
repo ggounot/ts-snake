@@ -14,5 +14,8 @@
   "bugs": {
     "url": "https://github.com/ggounot/ts-snake/issues"
   },
-  "homepage": "https://github.com/ggounot/ts-snake#readme"
+  "homepage": "https://github.com/ggounot/ts-snake#readme",
+  "devDependencies": {
+    "typescript": "^3.9.2"
+  }
 }
