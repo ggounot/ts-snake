@@ -1,9 +1,16 @@
 import settings from "./settings";
 import canvasSettings from "./canvas-settings";
-import { initSnake } from "./snake";
+import { initSnake, nextStep } from "./snake";
 import { State } from "./types";
 
 const draw = (ctx: CanvasRenderingContext2D, state: State): void => {
+  ctx.fillStyle = canvasSettings.backgroundColor;
+  ctx.fillRect(
+    0,
+    0,
+    settings.gridWidth * canvasSettings.cellSize,
+    settings.gridHeight * canvasSettings.cellSize
+  );
   ctx.fillStyle = canvasSettings.snakeColor;
   state.snakePositions.forEach((position) =>
     ctx.fillRect(
@@ -20,6 +27,24 @@ const draw = (ctx: CanvasRenderingContext2D, state: State): void => {
     canvasSettings.cellSize,
     canvasSettings.cellSize
   );
+};
+
+const runSnake = (ctx: CanvasRenderingContext2D) => {
+  const stepDelay = 1000 / settings.stepsPerSecond;
+  let state = initSnake();
+  draw(ctx, state);
+  let lastTimestamp = performance.now();
+
+  const drawNextFrame = (timestamp: DOMHighResTimeStamp) => {
+    if (timestamp - lastTimestamp > stepDelay) {
+      state = nextStep(state, state.snakeDirection);
+      draw(ctx, state);
+      lastTimestamp = timestamp;
+    }
+    requestAnimationFrame(drawNextFrame);
+  };
+
+  requestAnimationFrame(drawNextFrame);
 };
 
 const main = (doc: Document = document) => {
@@ -40,9 +65,7 @@ const main = (doc: Document = document) => {
     throw "Could not get 2D rendering context";
   }
 
-  const state = initSnake();
-
-  draw(ctx, state);
+  runSnake(ctx);
 };
 
 main();
