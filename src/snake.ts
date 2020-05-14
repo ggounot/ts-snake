@@ -1,8 +1,15 @@
-import { Position, State, Direction } from "./types";
+import { Position, State, Direction, GameStatus } from "./types";
 import settings from "./settings";
 
 const getRandomNumber = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min)) + min;
+};
+
+const positionOnPositions = (posA: Position, posBs: Position[]) => {
+  return posBs.reduce(
+    (result, posB) => result || (posA.x === posB.x && posA.y === posB.y),
+    false
+  );
 };
 
 const getRandomApplePosition = (snakePositions: Position[]): Position => {
@@ -10,13 +17,7 @@ const getRandomApplePosition = (snakePositions: Position[]): Position => {
     x: getRandomNumber(0, settings.gridWidth),
     y: getRandomNumber(0, settings.gridHeight),
   };
-  const appleOnSnake = snakePositions.reduce(
-    (result, snakePosition) =>
-      result ||
-      (applePosition.x === snakePosition.x &&
-        applePosition.y === snakePosition.y),
-    false
-  );
+  const appleOnSnake = positionOnPositions(applePosition, snakePositions);
   return appleOnSnake ? getRandomApplePosition(snakePositions) : applePosition;
 };
 
@@ -25,6 +26,7 @@ const initSnake = (): State => {
     snakePositions: [settings.defaultSnakePosition],
     snakeDirection: settings.defaultSnakeDirection,
     applePosition: getRandomApplePosition([settings.defaultSnakePosition]),
+    gameStatus: GameStatus.InProgress,
   };
 };
 
@@ -78,6 +80,13 @@ const eatApple = (headPosition: Position, applePosition: Position): Boolean => {
   );
 };
 
+const eatTail = (
+  headPosition: Position,
+  tailPositions: Position[]
+): Boolean => {
+  return positionOnPositions(headPosition, tailPositions);
+};
+
 const nextStep = (
   previousState: State,
   newDirection: Direction | undefined
@@ -95,9 +104,12 @@ const nextStep = (
   );
   const snakePositions = previousState.snakePositions;
   let applePosition = previousState.applePosition;
+  let gameStatus = previousState.gameStatus;
   snakePositions.unshift(headPosition);
   if (eatApple(headPosition, applePosition)) {
     applePosition = getRandomApplePosition(snakePositions);
+  } else if (eatTail(headPosition, snakePositions.slice(1))) {
+    gameStatus = GameStatus.Lost;
   } else {
     snakePositions.pop();
   }
@@ -105,6 +117,7 @@ const nextStep = (
     snakePositions: snakePositions,
     snakeDirection: snakeDirection,
     applePosition: applePosition,
+    gameStatus: gameStatus,
   };
 };
 

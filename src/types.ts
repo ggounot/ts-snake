@@ -10,8 +10,15 @@ export enum Direction {
   Right,
 }
 
+export enum GameStatus {
+  InProgress,
+  Won,
+  Lost,
+}
+
 export interface State {
   snakePositions: Position[];
   snakeDirection: Direction;
   applePosition: Position;
+  gameStatus: GameStatus;
 }

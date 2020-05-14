@@ -1,9 +1,9 @@
 import settings from "./settings";
 import canvasSettings from "./canvas-settings";
 import { initSnake, nextStep } from "./snake";
-import { State, Direction } from "./types";
+import { State, Direction, GameStatus } from "./types";
 
-const draw = (ctx: CanvasRenderingContext2D, state: State): void => {
+const drawProgress = (ctx: CanvasRenderingContext2D, state: State): void => {
   ctx.fillStyle = canvasSettings.backgroundColor;
   ctx.fillRect(
     0,
@@ -27,6 +27,47 @@ const draw = (ctx: CanvasRenderingContext2D, state: State): void => {
     canvasSettings.cellSize,
     canvasSettings.cellSize
   );
+};
+
+const drawFadeIn = (
+  ctx: CanvasRenderingContext2D,
+  fn: Function,
+  counter: number = 50
+) => {
+  fn();
+  if (counter - 1 > 0) {
+    requestAnimationFrame(() => drawFadeIn(ctx, fn, counter - 1));
+  }
+};
+
+const drawGameLost = (ctx: CanvasRenderingContext2D) => {
+  ctx.fillStyle = canvasSettings.gameLostBackgroundColor;
+  drawFadeIn(ctx, () => {
+    ctx.fillRect(
+      0,
+      0,
+      settings.gridWidth * canvasSettings.cellSize,
+      settings.gridHeight * canvasSettings.cellSize
+    );
+  });
+  setTimeout(() => {
+    drawFadeIn(ctx, () => {
+      ctx.fillStyle = canvasSettings.gameEndTextColor;
+      ctx.font = "bold 50px sans";
+      ctx.fillText("YOU LOST", 25, 165);
+    });
+  }, 900);
+};
+
+const draw = (ctx: CanvasRenderingContext2D, state: State): void => {
+  switch (state.gameStatus) {
+    case GameStatus.InProgress:
+      drawProgress(ctx, state);
+      break;
+    case GameStatus.Lost:
+      drawGameLost(ctx);
+      break;
+  }
 };
 
 const keycodeToDirection = (keycode: number): number | null => {
@@ -68,7 +109,9 @@ const runSnake = (doc: Document, ctx: CanvasRenderingContext2D) => {
       draw(ctx, state);
       lastTimestamp = timestamp;
     }
-    requestAnimationFrame(drawNextFrame);
+    if (state.gameStatus === GameStatus.InProgress) {
+      requestAnimationFrame(drawNextFrame);
+    }
   };
   requestAnimationFrame(drawNextFrame);
 };
