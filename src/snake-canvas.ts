@@ -40,8 +40,13 @@ const drawFadeIn = (
   }
 };
 
-const drawGameLost = (ctx: CanvasRenderingContext2D) => {
-  ctx.fillStyle = canvasSettings.gameLostBackgroundColor;
+const drawEnd = (
+  ctx: CanvasRenderingContext2D,
+  backgroundColor: string,
+  text: string,
+  leftMargin: number
+) => {
+  ctx.fillStyle = backgroundColor;
   drawFadeIn(ctx, () => {
     ctx.fillRect(
       0,
@@ -54,7 +59,7 @@ const drawGameLost = (ctx: CanvasRenderingContext2D) => {
     drawFadeIn(ctx, () => {
       ctx.fillStyle = canvasSettings.gameEndTextColor;
       ctx.font = "bold 50px sans";
-      ctx.fillText("YOU LOST", 25, 165);
+      ctx.fillText(text, leftMargin, 165);
     });
   }, 900);
 };
@@ -64,8 +69,11 @@ const draw = (ctx: CanvasRenderingContext2D, state: State): void => {
     case GameStatus.InProgress:
       drawProgress(ctx, state);
       break;
+    case GameStatus.Won:
+      drawEnd(ctx, canvasSettings.gameWonBackgroundColor, "YOU WON", 30);
+      break;
     case GameStatus.Lost:
-      drawGameLost(ctx);
+      drawEnd(ctx, canvasSettings.gameLostBackgroundColor, "YOU LOST", 25);
       break;
   }
 };

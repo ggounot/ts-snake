@@ -87,6 +87,10 @@ const eatTail = (
   return positionOnPositions(headPosition, tailPositions);
 };
 
+const noEmptyCells = (snakePositions: Position[]): Boolean => {
+  return snakePositions.length === settings.gridHeight * settings.gridWidth;
+};
+
 const nextStep = (
   previousState: State,
   newDirection: Direction | undefined
@@ -106,7 +110,9 @@ const nextStep = (
   let applePosition = previousState.applePosition;
   let gameStatus = previousState.gameStatus;
   snakePositions.unshift(headPosition);
-  if (eatApple(headPosition, applePosition)) {
+  if (noEmptyCells(snakePositions)) {
+    gameStatus = GameStatus.Won;
+  } else if (eatApple(headPosition, applePosition)) {
     applePosition = getRandomApplePosition(snakePositions);
   } else if (eatTail(headPosition, snakePositions.slice(1))) {
     gameStatus = GameStatus.Lost;
