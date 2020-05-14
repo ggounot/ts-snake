@@ -1,7 +1,7 @@
 import settings from "./settings";
 import canvasSettings from "./canvas-settings";
 import { initSnake, nextStep } from "./snake";
-import { State } from "./types";
+import { State, Direction } from "./types";
 
 const draw = (ctx: CanvasRenderingContext2D, state: State): void => {
   ctx.fillStyle = canvasSettings.backgroundColor;
@@ -29,21 +29,47 @@ const draw = (ctx: CanvasRenderingContext2D, state: State): void => {
   );
 };
 
-const runSnake = (ctx: CanvasRenderingContext2D) => {
-  const stepDelay = 1000 / settings.stepsPerSecond;
+const keycodeToDirection = (keycode: number): number | null => {
+  switch (keycode) {
+    case 37:
+      return Direction.Left;
+    case 38:
+      return Direction.Up;
+    case 39:
+      return Direction.Right;
+    case 40:
+      return Direction.Down;
+    default:
+      return null;
+  }
+};
+
+const runSnake = (doc: Document, ctx: CanvasRenderingContext2D) => {
+  /* Record instructed directions */
+  let instructedDirections: Direction[] = [];
+  doc.addEventListener("keydown", (event) => {
+    console.log("keydown", event.keyCode);
+    const direction = keycodeToDirection(event.keyCode);
+    if (direction !== null) {
+      instructedDirections.push(direction);
+    }
+  });
+
+  /* Get initial state and draw frame */
   let state = initSnake();
   draw(ctx, state);
   let lastTimestamp = performance.now();
 
+  /* Get subsequent states and draw frames */
+  const stepDelay = 1000 / settings.stepsPerSecond;
   const drawNextFrame = (timestamp: DOMHighResTimeStamp) => {
     if (timestamp - lastTimestamp > stepDelay) {
-      state = nextStep(state, state.snakeDirection);
+      state = nextStep(state, instructedDirections.shift());
       draw(ctx, state);
       lastTimestamp = timestamp;
     }
     requestAnimationFrame(drawNextFrame);
   };
-
   requestAnimationFrame(drawNextFrame);
 };
 
@@ -60,12 +86,11 @@ const main = (doc: Document = document) => {
   canvas.height = settings.gridHeight * canvasSettings.cellSize;
 
   const ctx = canvas.getContext("2d");
-
   if (ctx === null) {
     throw "Could not get 2D rendering context";
   }
 
-  runSnake(ctx);
+  runSnake(doc, ctx);
 };
 
 main();

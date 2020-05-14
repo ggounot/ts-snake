@@ -28,6 +28,18 @@ const initSnake = (): State => {
   };
 };
 
+const isValidDirection = (
+  previousDirection: Direction,
+  newDirection: Direction
+): Boolean => {
+  return !(
+    (previousDirection == Direction.Up && newDirection == Direction.Down) ||
+    (previousDirection == Direction.Down && newDirection == Direction.Up) ||
+    (previousDirection == Direction.Left && newDirection == Direction.Right) ||
+    (previousDirection == Direction.Right && newDirection == Direction.Left)
+  );
+};
+
 const positiveModulo = (a: number, b: number): number => {
   return ((a % b) + b) % b;
 };
@@ -60,15 +72,20 @@ const getNextHeadPosition = (
   }
 };
 
-const nextStep = (previousState: State, direction: Direction): State => {
-  const previousHeadPosition =
-    previousState.snakePositions[previousState.snakePositions.length - 1];
-  const nextHeadPosition = getNextHeadPosition(previousHeadPosition, direction);
-  const newSnakePositions = previousState.snakePositions.slice(1);
-  newSnakePositions.push(nextHeadPosition);
+const nextStep = (
+  previousState: State,
+  newDirection: Direction | undefined
+): State => {
+  let snakeDirection = previousState.snakeDirection;
+  if (
+    newDirection !== undefined &&
+    isValidDirection(snakeDirection, newDirection)
+  ) {
+    snakeDirection = newDirection;
+  }
   return {
-    snakePositions: newSnakePositions,
-    snakeDirection: direction,
+    snakePositions: previousState.snakePositions,
+    snakeDirection: snakeDirection,
     applePosition: previousState.applePosition,
   };
 };
