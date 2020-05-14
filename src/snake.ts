@@ -72,6 +72,12 @@ const getNextHeadPosition = (
   }
 };
 
+const eatApple = (headPosition: Position, applePosition: Position): Boolean => {
+  return (
+    headPosition.x === applePosition.x && headPosition.y === applePosition.y
+  );
+};
+
 const nextStep = (
   previousState: State,
   newDirection: Direction | undefined
@@ -83,10 +89,22 @@ const nextStep = (
   ) {
     snakeDirection = newDirection;
   }
+  const headPosition = getNextHeadPosition(
+    previousState.snakePositions[0],
+    snakeDirection
+  );
+  const snakePositions = previousState.snakePositions;
+  let applePosition = previousState.applePosition;
+  snakePositions.unshift(headPosition);
+  if (eatApple(headPosition, applePosition)) {
+    applePosition = getRandomApplePosition(snakePositions);
+  } else {
+    snakePositions.pop();
+  }
   return {
-    snakePositions: previousState.snakePositions,
+    snakePositions: snakePositions,
     snakeDirection: snakeDirection,
-    applePosition: previousState.applePosition,
+    applePosition: applePosition,
   };
 };
 
