@@ -19,6 +19,7 @@
   "homepage": "https://github.com/ggounot/ts-snake#readme",
   "devDependencies": {
     "parcel-bundler": "^1.12.4",
+    "prettier": "^2.0.5",
     "typescript": "^3.9.2"
   }
 }
